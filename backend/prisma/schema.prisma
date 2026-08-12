@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ━━━━━━━━━━━━━━━ ENUMS ━━━━━━━━━━━━━━━
+
+enum Role {
+  ADMIN
+  LIBRARIAN
+}
+
+enum IssueStatus {
+  ISSUED
+  RETURNED
+  OVERDUE
+}
+
+enum EntryType {
+  ENTRY
+  EXIT
+}
+
+enum NotifType {
+  DUE_REMINDER
+  OVERDUE_ALERT
+  ISSUE_CONFIRMATION
+  RETURN_CONFIRMATION
+  FINE_NOTICE
+}
+
+// ━━━━━━━━━━━━━━━ MODELS ━━━━━━━━━━━━━━━
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(LIBRARIAN)
+  createdAt DateTime @default(now())
+
+  @@map("users")
+}
+
+model Student {
+  id           Int         @id @default(autoincrement())
+  name         String
+  email        String      @unique
+  phone        String?
+  department   String
+  rfidUid      String?     @unique
+  enrollmentNo String      @unique
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  issues       BookIssue[]
+  entries      RFIDLog[]
+
+  @@map("students")
+}
+
+model Book {
+  id              Int         @id @default(autoincrement())
+  title           String
+  author          String
+  isbn            String      @unique
+  category        String
+  publisher       String?
+  totalCopies     Int         @default(1)
+  availableCopies Int         @default(1)
+  shelfLocation   String?
+  createdAt       DateTime    @default(now())
+  issues          BookIssue[]
+
+  @@map("books")
+}
+
+model BookIssue {
+  id         Int         @id @default(autoincrement())
+  student    Student     @relation(fields: [studentId], references: [id])
+  studentId  Int
+  book       Book        @relation(fields: [bookId], references: [id])
+  bookId     Int
+  issueDate  DateTime    @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+  status     IssueStatus @default(ISSUED)
+  fineAmount Float       @default(0)
+  finePaid   Boolean     @default(false)
+  issuedBy   Int
+  createdAt  DateTime    @default(now())
+
+  @@map("book_issues")
+}
+
+model RFIDLog {
+  id        Int       @id @default(autoincrement())
+  student   Student   @relation(fields: [studentId], references: [id])
+  studentId Int
+  rfidUid   String
+  entryType EntryType
+  timestamp DateTime  @default(now())
+
+  @@map("rfid_logs")
+}
+
+model Notification {
+  id        Int       @id @default(autoincrement())
+  studentId Int
+  type      NotifType
+  message   String
+  sentAt    DateTime  @default(now())
+  isRead    Boolean   @default(false)
+
+  @@map("notifications")
+}
+
+model Fine {
+  id        Int       @id @default(autoincrement())
+  issueId   Int       @unique
+  studentId Int
+  amount    Float
+  reason    String
+  isPaid    Boolean   @default(false)
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("fines")
+}
