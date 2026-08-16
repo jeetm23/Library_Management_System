@@ -2,7 +2,7 @@ const FineTable = ({ fines, onPay }) => {
   if (!fines || fines.length === 0) {
     return (
       <div className="glass-card p-8 text-center">
-        <p className="text-dark-400">No fines found.</p>
+        <p className="text-gray-500">No fines found.</p>
       </div>
     );
   }
@@ -25,25 +25,25 @@ const FineTable = ({ fines, onPay }) => {
         <tbody>
           {fines.map((fine) => (
             <tr key={fine.id} className="table-row">
-              <td className="px-5 py-3 text-sm text-dark-400">#{fine.id}</td>
+              <td className="px-5 py-3 text-sm text-gray-500">#{fine.id}</td>
               <td className="px-5 py-3">
                 <div>
-                  <p className="text-sm text-white font-medium">
+                  <p className="text-sm text-gray-900 font-medium">
                     {fine.issue?.student?.name || '-'}
                   </p>
-                  <p className="text-xs text-dark-400">
+                  <p className="text-xs text-gray-500">
                     {fine.issue?.student?.enrollmentNo || ''}
                   </p>
                 </div>
               </td>
               <td className="px-5 py-3">
-                <p className="text-sm text-white">{fine.issue?.book?.title || '-'}</p>
+                <p className="text-sm text-gray-900">{fine.issue?.book?.title || '-'}</p>
               </td>
-              <td className="px-5 py-3 text-sm text-dark-300 max-w-[200px] truncate">
+              <td className="px-5 py-3 text-sm text-gray-600 max-w-[200px] truncate">
                 {fine.reason}
               </td>
               <td className="px-5 py-3 text-right">
-                <span className="text-red-400 font-bold text-sm">₹{fine.amount.toFixed(2)}</span>
+                <span className="text-red-600 font-bold text-sm">₹{fine.amount.toFixed(2)}</span>
               </td>
               <td className="px-5 py-3 text-center">
                 {fine.isPaid ? (
@@ -52,7 +52,7 @@ const FineTable = ({ fines, onPay }) => {
                   <span className="badge-danger">Unpaid</span>
                 )}
               </td>
-              <td className="px-5 py-3 text-sm text-dark-400">
+              <td className="px-5 py-3 text-sm text-gray-500">
                 {new Date(fine.createdAt).toLocaleDateString()}
               </td>
               {onPay && (

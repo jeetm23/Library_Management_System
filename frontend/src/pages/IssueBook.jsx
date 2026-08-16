@@ -91,13 +91,13 @@ const IssueBook = () => {
           {/* Student Selection */}
           <div className="glass-card p-5">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                <HiOutlineUserGroup className="w-4.5 h-4.5 text-emerald-400" />
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <HiOutlineUserGroup className="w-4.5 h-4.5 text-emerald-600" />
               </div>
-              <h3 className="text-white font-semibold text-sm">Select Student</h3>
+              <h3 className="text-gray-900 font-semibold text-sm">Select Student</h3>
             </div>
             <div className="relative">
-              <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
+              <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input
                 type="text"
                 value={studentSearch}
@@ -107,7 +107,7 @@ const IssueBook = () => {
                 className="input-field pl-11"
               />
               {showStudentDropdown && students.length > 0 && (
-                <div className="absolute z-20 w-full mt-1 bg-dark-800 border border-dark-600 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
                   {students.map((s) => (
                     <button
                       key={s.id}
@@ -116,11 +116,11 @@ const IssueBook = () => {
                         setStudentSearch(s.name);
                         setShowStudentDropdown(false);
                       }}
-                      className="w-full px-4 py-2.5 text-left hover:bg-dark-700/50 transition-colors flex items-center justify-between"
+                      className="w-full px-4 py-2.5 text-left hover:bg-gray-100 transition-colors flex items-center justify-between"
                     >
                       <div>
-                        <p className="text-sm text-white">{s.name}</p>
-                        <p className="text-xs text-dark-400">{s.enrollmentNo} • {s.department}</p>
+                        <p className="text-sm text-gray-900">{s.name}</p>
+                        <p className="text-xs text-gray-500">{s.enrollmentNo} • {s.department}</p>
                       </div>
                     </button>
                   ))}
@@ -128,8 +128,8 @@ const IssueBook = () => {
               )}
             </div>
             {selectedStudent && (
-              <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3">
-                <HiOutlineCheck className="w-4 h-4 text-emerald-400" />
+              <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+                <HiOutlineCheck className="w-4 h-4 text-emerald-600" />
                 <p className="text-sm text-emerald-300">
                   <span className="font-semibold">{selectedStudent.name}</span> — {selectedStudent.enrollmentNo}
                 </p>
@@ -140,13 +140,13 @@ const IssueBook = () => {
           {/* Book Selection */}
           <div className="glass-card p-5">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-primary-500/15 flex items-center justify-center">
-                <HiOutlineBookOpen className="w-4.5 h-4.5 text-primary-400" />
+              <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center">
+                <HiOutlineBookOpen className="w-4.5 h-4.5 text-primary-600" />
               </div>
-              <h3 className="text-white font-semibold text-sm">Select Book</h3>
+              <h3 className="text-gray-900 font-semibold text-sm">Select Book</h3>
             </div>
             <div className="relative">
-              <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
+              <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input
                 type="text"
                 value={bookSearch}
@@ -156,7 +156,7 @@ const IssueBook = () => {
                 className="input-field pl-11"
               />
               {showBookDropdown && books.length > 0 && (
-                <div className="absolute z-20 w-full mt-1 bg-dark-800 border border-dark-600 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
                   {books.map((b) => (
                     <button
                       key={b.id}
@@ -165,11 +165,11 @@ const IssueBook = () => {
                         setBookSearch(b.title);
                         setShowBookDropdown(false);
                       }}
-                      className="w-full px-4 py-2.5 text-left hover:bg-dark-700/50 transition-colors flex items-center justify-between"
+                      className="w-full px-4 py-2.5 text-left hover:bg-gray-100 transition-colors flex items-center justify-between"
                     >
                       <div>
-                        <p className="text-sm text-white">{b.title}</p>
-                        <p className="text-xs text-dark-400">{b.author} • ISBN: {b.isbn}</p>
+                        <p className="text-sm text-gray-900">{b.title}</p>
+                        <p className="text-xs text-gray-500">{b.author} • ISBN: {b.isbn}</p>
                       </div>
                       <span className="badge-success text-[10px]">{b.availableCopies} avail.</span>
                     </button>
@@ -178,9 +178,9 @@ const IssueBook = () => {
               )}
             </div>
             {selectedBook && (
-              <div className="mt-3 p-3 bg-primary-500/10 border border-primary-500/20 rounded-xl flex items-center gap-3">
-                <HiOutlineCheck className="w-4 h-4 text-primary-400" />
-                <p className="text-sm text-primary-300">
+              <div className="mt-3 p-3 bg-primary-50 border border-primary-200 rounded-xl flex items-center gap-3">
+                <HiOutlineCheck className="w-4 h-4 text-primary-600" />
+                <p className="text-sm text-primary-600">
                   <span className="font-semibold">{selectedBook.title}</span> — {selectedBook.availableCopies} available
                 </p>
               </div>
@@ -190,10 +190,10 @@ const IssueBook = () => {
           {/* Due Days */}
           <div className="glass-card p-5">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
-                <HiOutlineCalendar className="w-4.5 h-4.5 text-amber-400" />
+              <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+                <HiOutlineCalendar className="w-4.5 h-4.5 text-amber-600" />
               </div>
-              <h3 className="text-white font-semibold text-sm">Due Period</h3>
+              <h3 className="text-gray-900 font-semibold text-sm">Due Period</h3>
             </div>
             <div className="flex items-center gap-4">
               <input
@@ -204,8 +204,8 @@ const IssueBook = () => {
                 onChange={(e) => setDueDays(e.target.value)}
                 className="input-field w-24 text-center"
               />
-              <span className="text-dark-400 text-sm">
-                days — Due: <span className="text-white font-medium">{dueDate.toLocaleDateString()}</span>
+              <span className="text-gray-500 text-sm">
+                days — Due: <span className="text-gray-900 font-medium">{dueDate.toLocaleDateString()}</span>
               </span>
             </div>
           </div>
@@ -213,43 +213,43 @@ const IssueBook = () => {
 
         {/* Preview Card */}
         <div className="glass-card p-6 h-fit sticky top-24">
-          <h3 className="text-white font-semibold mb-4">Issue Preview</h3>
+          <h3 className="text-gray-900 font-semibold mb-4">Issue Preview</h3>
           {selectedStudent && selectedBook ? (
             <div className="space-y-4">
-              <div className="p-4 bg-dark-900/50 rounded-xl space-y-3">
+              <div className="p-4 bg-gray-100/50 rounded-xl space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Student</span>
-                  <span className="text-white font-medium">{selectedStudent.name}</span>
+                  <span className="text-gray-500">Student</span>
+                  <span className="text-gray-900 font-medium">{selectedStudent.name}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Enrollment</span>
-                  <span className="text-white">{selectedStudent.enrollmentNo}</span>
+                  <span className="text-gray-500">Enrollment</span>
+                  <span className="text-gray-900">{selectedStudent.enrollmentNo}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Department</span>
-                  <span className="text-white">{selectedStudent.department}</span>
+                  <span className="text-gray-500">Department</span>
+                  <span className="text-gray-900">{selectedStudent.department}</span>
                 </div>
-                <hr className="border-dark-700" />
+                <hr className="border-gray-200" />
                 <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Book</span>
-                  <span className="text-white font-medium">{selectedBook.title}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Author</span>
-                  <span className="text-white">{selectedBook.author}</span>
+                  <span className="text-gray-500">Book</span>
+                  <span className="text-gray-900 font-medium">{selectedBook.title}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">ISBN</span>
-                  <span className="text-white">{selectedBook.isbn}</span>
-                </div>
-                <hr className="border-dark-700" />
-                <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Issue Date</span>
-                  <span className="text-white">{new Date().toLocaleDateString()}</span>
+                  <span className="text-gray-500">Author</span>
+                  <span className="text-gray-900">{selectedBook.author}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Due Date</span>
-                  <span className="text-amber-400 font-semibold">{dueDate.toLocaleDateString()}</span>
+                  <span className="text-gray-500">ISBN</span>
+                  <span className="text-gray-900">{selectedBook.isbn}</span>
+                </div>
+                <hr className="border-gray-200" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Issue Date</span>
+                  <span className="text-gray-900">{new Date().toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Due Date</span>
+                  <span className="text-amber-600 font-semibold">{dueDate.toLocaleDateString()}</span>
                 </div>
               </div>
 
@@ -270,8 +270,8 @@ const IssueBook = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <HiOutlineBookOpen className="w-12 h-12 text-dark-600 mx-auto mb-3" />
-              <p className="text-dark-400 text-sm">Select a student and a book to preview the issue.</p>
+              <HiOutlineBookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">Select a student and a book to preview the issue.</p>
             </div>
           )}
         </div>

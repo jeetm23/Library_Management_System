@@ -58,48 +58,48 @@ const RFIDPanel = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Last Scan Result */}
         <div className="glass-card p-6">
-          <h3 className="text-white font-semibold mb-4">Last Scan</h3>
+          <h3 className="text-gray-900 font-semibold mb-4">Last Scan</h3>
           {lastScan ? (
             <div className="space-y-4">
               <div className={`p-4 rounded-xl text-center ${
                 lastScan.entryType === 'ENTRY'
-                  ? 'bg-emerald-500/10 border border-emerald-500/20'
-                  : 'bg-amber-500/10 border border-amber-500/20'
+                  ? 'bg-emerald-50 border border-emerald-200'
+                  : 'bg-amber-50 border border-amber-500/20'
               }`}>
                 {lastScan.entryType === 'ENTRY' ? (
-                  <HiOutlineLogin className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                  <HiOutlineLogin className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
                 ) : (
-                  <HiOutlineLogout className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                  <HiOutlineLogout className="w-8 h-8 text-amber-600 mx-auto mb-2" />
                 )}
                 <p className={`text-lg font-bold ${
-                  lastScan.entryType === 'ENTRY' ? 'text-emerald-400' : 'text-amber-400'
+                  lastScan.entryType === 'ENTRY' ? 'text-emerald-600' : 'text-amber-600'
                 }`}>
                   {lastScan.entryType}
                 </p>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-dark-400">Name</span>
-                  <span className="text-white font-medium">{lastScan.student.name}</span>
+                  <span className="text-gray-500">Name</span>
+                  <span className="text-gray-900 font-medium">{lastScan.student.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-dark-400">Enrollment</span>
-                  <span className="text-white">{lastScan.student.enrollmentNo}</span>
+                  <span className="text-gray-500">Enrollment</span>
+                  <span className="text-gray-900">{lastScan.student.enrollmentNo}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-dark-400">Department</span>
-                  <span className="text-white">{lastScan.student.department}</span>
+                  <span className="text-gray-500">Department</span>
+                  <span className="text-gray-900">{lastScan.student.department}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-dark-400">Time</span>
-                  <span className="text-white">{new Date(lastScan.timestamp).toLocaleTimeString()}</span>
+                  <span className="text-gray-500">Time</span>
+                  <span className="text-gray-900">{new Date(lastScan.timestamp).toLocaleTimeString()}</span>
                 </div>
               </div>
             </div>
           ) : (
             <div className="text-center py-8">
-              <HiOutlineStatusOnline className="w-10 h-10 text-dark-600 mx-auto mb-3" />
-              <p className="text-dark-400 text-sm">Scan an RFID card to see results.</p>
+              <HiOutlineStatusOnline className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">Scan an RFID card to see results.</p>
             </div>
           )}
         </div>
@@ -109,35 +109,35 @@ const RFIDPanel = () => {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4">
             <div className="stat-card">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                <HiOutlineLogin className="w-4 h-4 text-emerald-400" />
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <HiOutlineLogin className="w-4 h-4 text-emerald-600" />
               </div>
-              <p className="text-xl font-bold text-white">{todaySummary.entries}</p>
-              <p className="text-xs text-dark-400">Entries Today</p>
+              <p className="text-xl font-bold text-gray-900">{todaySummary.entries}</p>
+              <p className="text-xs text-gray-500">Entries Today</p>
             </div>
             <div className="stat-card">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
-                <HiOutlineLogout className="w-4 h-4 text-amber-400" />
+              <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+                <HiOutlineLogout className="w-4 h-4 text-amber-600" />
               </div>
-              <p className="text-xl font-bold text-white">{todaySummary.exits}</p>
-              <p className="text-xs text-dark-400">Exits Today</p>
+              <p className="text-xl font-bold text-gray-900">{todaySummary.exits}</p>
+              <p className="text-xs text-gray-500">Exits Today</p>
             </div>
             <div className="stat-card">
-              <div className="w-9 h-9 rounded-xl bg-primary-500/15 flex items-center justify-center">
-                <HiOutlineStatusOnline className="w-4 h-4 text-primary-400" />
+              <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center">
+                <HiOutlineStatusOnline className="w-4 h-4 text-primary-600" />
               </div>
-              <p className="text-xl font-bold text-white">{todaySummary.entries - todaySummary.exits}</p>
-              <p className="text-xs text-dark-400">Currently Inside</p>
+              <p className="text-xl font-bold text-gray-900">{todaySummary.entries - todaySummary.exits}</p>
+              <p className="text-xs text-gray-500">Currently Inside</p>
             </div>
           </div>
 
           {/* Live Feed */}
           <div className="glass-card p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold text-sm">Live Entry/Exit Feed</h3>
+              <h3 className="text-gray-900 font-semibold text-sm">Live Entry/Exit Feed</h3>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-dark-400">Auto-refresh 10s</span>
+                <span className="text-xs text-gray-500">Auto-refresh 10s</span>
               </div>
             </div>
             {loading ? (
@@ -147,26 +147,26 @@ const RFIDPanel = () => {
             ) : todayLogs.length > 0 ? (
               <div className="space-y-2 max-h-80 overflow-y-auto">
                 {todayLogs.map((log) => (
-                  <div key={log.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-dark-700/30 transition-colors">
+                  <div key={log.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       log.entryType === 'ENTRY'
-                        ? 'bg-emerald-500/15'
-                        : 'bg-amber-500/15'
+                        ? 'bg-emerald-50'
+                        : 'bg-amber-50'
                     }`}>
                       {log.entryType === 'ENTRY'
-                        ? <HiOutlineLogin className="w-4 h-4 text-emerald-400" />
-                        : <HiOutlineLogout className="w-4 h-4 text-amber-400" />
+                        ? <HiOutlineLogin className="w-4 h-4 text-emerald-600" />
+                        : <HiOutlineLogout className="w-4 h-4 text-amber-600" />
                       }
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white font-medium">{log.student?.name}</p>
-                      <p className="text-xs text-dark-400">{log.student?.department} • {log.student?.enrollmentNo}</p>
+                      <p className="text-sm text-gray-900 font-medium">{log.student?.name}</p>
+                      <p className="text-xs text-gray-500">{log.student?.department} • {log.student?.enrollmentNo}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <span className={log.entryType === 'ENTRY' ? 'badge-success' : 'badge-warning'}>
                         {log.entryType}
                       </span>
-                      <p className="text-xs text-dark-400 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         {new Date(log.timestamp).toLocaleTimeString()}
                       </p>
                     </div>
@@ -174,7 +174,7 @@ const RFIDPanel = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-dark-400 text-sm text-center py-6">No entries/exits recorded today.</p>
+              <p className="text-gray-500 text-sm text-center py-6">No entries/exits recorded today.</p>
             )}
           </div>
         </div>

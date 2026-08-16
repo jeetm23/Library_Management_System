@@ -15,16 +15,16 @@ const RFIDScanner = ({ onScan, loading }) => {
   return (
     <div className="glass-card p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
-          <HiOutlineStatusOnline className="w-5 h-5 text-emerald-400" />
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+          <HiOutlineStatusOnline className="w-5 h-5 text-emerald-600" />
         </div>
         <div>
-          <h3 className="text-white font-semibold text-sm">RFID Scanner</h3>
-          <p className="text-dark-400 text-xs">Enter or scan RFID card UID</p>
+          <h3 className="text-gray-900 font-semibold text-sm">RFID Scanner</h3>
+          <p className="text-gray-500 text-xs">Enter or scan RFID card UID</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs text-emerald-400">Ready</span>
+          <span className="text-xs text-emerald-600">Ready</span>
         </div>
       </div>
 

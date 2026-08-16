@@ -103,7 +103,7 @@ const Books = () => {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[250px] max-w-md">
-          <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
+          <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
             placeholder="Search by title, author, ISBN..."
@@ -113,7 +113,7 @@ const Books = () => {
           />
         </div>
         <div className="relative">
-          <HiOutlineFilter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
+          <HiOutlineFilter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <select
             value={category}
             onChange={(e) => { setCategory(e.target.value); setPage(1); }}
@@ -139,7 +139,7 @@ const Books = () => {
           ))}
           {books.length === 0 && (
             <div className="col-span-full glass-card p-8 text-center">
-              <p className="text-dark-400">No books found.</p>
+              <p className="text-gray-500">No books found.</p>
             </div>
           )}
         </div>
@@ -149,7 +149,7 @@ const Books = () => {
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={!pagination.hasPrev} className="btn-secondary text-sm py-2 px-4 disabled:opacity-30">Prev</button>
-          <span className="text-sm text-dark-400">Page {pagination.page} of {pagination.totalPages}</span>
+          <span className="text-sm text-gray-500">Page {pagination.page} of {pagination.totalPages}</span>
           <button onClick={() => setPage(p => p + 1)} disabled={!pagination.hasNext} className="btn-secondary text-sm py-2 px-4 disabled:opacity-30">Next</button>
         </div>
       )}
@@ -158,40 +158,40 @@ const Books = () => {
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-dark-700">
-              <h2 className="text-lg font-bold text-white">{editBook ? 'Edit Book' : 'Add Book'}</h2>
-              <button onClick={closeModal} className="p-2 hover:bg-dark-700 rounded-lg transition-colors">
-                <HiOutlineX className="w-5 h-5 text-dark-400" />
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">{editBook ? 'Edit Book' : 'Add Book'}</h2>
+              <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <HiOutlineX className="w-5 h-5 text-gray-500" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm text-dark-300 mb-1">Title *</label>
+                <label className="block text-sm text-gray-600 mb-1">Title *</label>
                 <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input-field" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-dark-300 mb-1">Author *</label>
+                  <label className="block text-sm text-gray-600 mb-1">Author *</label>
                   <input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} className="input-field" required />
                 </div>
                 <div>
-                  <label className="block text-sm text-dark-300 mb-1">ISBN *</label>
+                  <label className="block text-sm text-gray-600 mb-1">ISBN *</label>
                   <input value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} className="input-field" required />
                 </div>
                 <div>
-                  <label className="block text-sm text-dark-300 mb-1">Category *</label>
+                  <label className="block text-sm text-gray-600 mb-1">Category *</label>
                   <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input-field" required />
                 </div>
                 <div>
-                  <label className="block text-sm text-dark-300 mb-1">Publisher</label>
+                  <label className="block text-sm text-gray-600 mb-1">Publisher</label>
                   <input value={form.publisher} onChange={(e) => setForm({ ...form, publisher: e.target.value })} className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-sm text-dark-300 mb-1">Total Copies</label>
+                  <label className="block text-sm text-gray-600 mb-1">Total Copies</label>
                   <input type="number" min="1" value={form.totalCopies} onChange={(e) => setForm({ ...form, totalCopies: e.target.value })} className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-sm text-dark-300 mb-1">Shelf Location</label>
+                  <label className="block text-sm text-gray-600 mb-1">Shelf Location</label>
                   <input value={form.shelfLocation} onChange={(e) => setForm({ ...form, shelfLocation: e.target.value })} className="input-field" placeholder="e.g., A1-01" />
                 </div>
               </div>

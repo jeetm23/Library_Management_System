@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
-import { HiOutlineSearch, HiOutlineReply, HiOutlineCash } from 'react-icons/hi';
+import { HiOutlineSearch, HiOutlineReply, HiOutlineCash, HiOutlineExclamationCircle, HiOutlineCheckCircle } from 'react-icons/hi';
 
 const ReturnBook = () => {
   const [issues, setIssues] = useState([]);
@@ -77,7 +77,7 @@ const ReturnBook = () => {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
+        <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
         <input
           type="text"
           placeholder="Search by student or book..."
@@ -106,36 +106,36 @@ const ReturnBook = () => {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-white font-semibold text-sm">{issue.book?.title}</h3>
+                          <h3 className="text-gray-900 font-semibold text-sm">{issue.book?.title}</h3>
                           <span className={issue.status === 'OVERDUE' ? 'badge-danger' : 'badge-info'}>
                             {issue.status}
                           </span>
                         </div>
-                        <p className="text-xs text-dark-400 mb-2">by {issue.book?.author}</p>
+                        <p className="text-xs text-gray-500 mb-2">by {issue.book?.author}</p>
                         <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
                           <div>
-                            <span className="text-dark-400">Student: </span>
-                            <span className="text-white">{issue.student?.name}</span>
+                            <span className="text-gray-500">Student: </span>
+                            <span className="text-gray-900">{issue.student?.name}</span>
                           </div>
                           <div>
-                            <span className="text-dark-400">Enrollment: </span>
-                            <span className="text-white">{issue.student?.enrollmentNo}</span>
+                            <span className="text-gray-500">Enrollment: </span>
+                            <span className="text-gray-900">{issue.student?.enrollmentNo}</span>
                           </div>
                           <div>
-                            <span className="text-dark-400">Issued: </span>
-                            <span className="text-white">{new Date(issue.issueDate).toLocaleDateString()}</span>
+                            <span className="text-gray-500">Issued: </span>
+                            <span className="text-gray-900">{new Date(issue.issueDate).toLocaleDateString()}</span>
                           </div>
                           <div>
-                            <span className="text-dark-400">Due: </span>
-                            <span className={isOverdue ? 'text-red-400 font-semibold' : 'text-white'}>
+                            <span className="text-gray-500">Due: </span>
+                            <span className={isOverdue ? 'text-red-600 font-semibold' : 'text-gray-900'}>
                               {new Date(issue.dueDate).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
                         {isOverdue && (
-                          <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded-lg">
-                            <p className="text-xs text-red-400">
-                              ⚠️ Overdue by {daysOver} days — Estimated fine: <span className="font-bold">₹{estFine}</span>
+                          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-xs text-red-600">
+                              <HiOutlineExclamationCircle className="w-4 h-4 inline mr-1" />Overdue by {daysOver} days — Estimated fine: <span className="font-bold">₹{estFine}</span>
                             </p>
                           </div>
                         )}
@@ -159,42 +159,42 @@ const ReturnBook = () => {
             </div>
           ) : (
             <div className="glass-card p-12 text-center">
-              <HiOutlineReply className="w-12 h-12 text-dark-600 mx-auto mb-3" />
-              <p className="text-dark-400">No active issues found.</p>
+              <HiOutlineReply className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">No active issues found.</p>
             </div>
           )}
         </div>
 
         {/* Return Result */}
         <div className="glass-card p-6 h-fit sticky top-24">
-          <h3 className="text-white font-semibold mb-4">Return Summary</h3>
+          <h3 className="text-gray-900 font-semibold mb-4">Return Summary</h3>
           {returnResult ? (
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center">
-                <p className="text-emerald-400 font-semibold text-lg">✅ Book Returned</p>
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+                <p className="text-emerald-600 font-semibold text-lg"><HiOutlineCheckCircle className="w-5 h-5 inline mr-1" />Book Returned</p>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-dark-400">Book</span>
-                  <span className="text-white font-medium">{returnResult.issue?.book?.title}</span>
+                  <span className="text-gray-500">Book</span>
+                  <span className="text-gray-900 font-medium">{returnResult.issue?.book?.title}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-dark-400">Student</span>
-                  <span className="text-white">{returnResult.issue?.student?.name}</span>
+                  <span className="text-gray-500">Student</span>
+                  <span className="text-gray-900">{returnResult.issue?.student?.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-dark-400">Return Date</span>
-                  <span className="text-white">{new Date(returnResult.issue?.returnDate).toLocaleDateString()}</span>
+                  <span className="text-gray-500">Return Date</span>
+                  <span className="text-gray-900">{new Date(returnResult.issue?.returnDate).toLocaleDateString()}</span>
                 </div>
               </div>
 
               {returnResult.fine ? (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-dark-300 text-sm">Fine Amount</span>
-                    <span className="text-red-400 font-bold text-lg">₹{returnResult.fine.amount.toFixed(2)}</span>
+                    <span className="text-gray-600 text-sm">Fine Amount</span>
+                    <span className="text-red-600 font-bold text-lg">₹{returnResult.fine.amount.toFixed(2)}</span>
                   </div>
-                  <p className="text-xs text-dark-400 mb-3">Overdue by {returnResult.fine.daysOverdue} days</p>
+                  <p className="text-xs text-gray-500 mb-3">Overdue by {returnResult.fine.daysOverdue} days</p>
                   {!returnResult.fine.isPaid && (
                     <button
                       onClick={() => handlePayFine(returnResult.fine.id)}
@@ -205,21 +205,21 @@ const ReturnBook = () => {
                     </button>
                   )}
                   {returnResult.fine.isPaid && (
-                    <div className="text-center p-2 bg-emerald-500/10 rounded-lg">
-                      <span className="text-emerald-400 text-sm font-semibold">✅ Fine Paid</span>
+                    <div className="text-center p-2 bg-emerald-50 rounded-lg">
+                      <span className="text-emerald-600 text-sm font-semibold"><HiOutlineCheckCircle className="w-4 h-4 inline mr-1" />Fine Paid</span>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center">
-                  <p className="text-emerald-400 text-sm">No fine applicable ✨</p>
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+                  <p className="text-emerald-600 text-sm">No fine applicable</p>
                 </div>
               )}
             </div>
           ) : (
             <div className="text-center py-8">
-              <HiOutlineReply className="w-10 h-10 text-dark-600 mx-auto mb-3" />
-              <p className="text-dark-400 text-sm">Return a book to see the summary here.</p>
+              <HiOutlineReply className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">Return a book to see the summary here.</p>
             </div>
           )}
         </div>

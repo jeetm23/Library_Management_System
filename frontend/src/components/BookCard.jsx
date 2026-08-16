@@ -7,8 +7,8 @@ const BookCard = ({ book, onEdit, onDelete }) => {
     <div className="glass-card-hover p-5 flex flex-col gap-3 animate-fade-in">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-          <HiOutlineBookOpen className="w-6 h-6 text-primary-400" />
+        <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
+          <HiOutlineBookOpen className="w-6 h-6 text-primary-600" />
         </div>
         <span className={isAvailable ? 'badge-success' : 'badge-danger'}>
           {isAvailable ? `${book.availableCopies} Available` : 'Out of Stock'}
@@ -17,8 +17,8 @@ const BookCard = ({ book, onEdit, onDelete }) => {
 
       {/* Info */}
       <div>
-        <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2">{book.title}</h3>
-        <p className="text-dark-400 text-xs mt-1">by {book.author}</p>
+        <h3 className="text-gray-900 font-semibold text-sm leading-snug line-clamp-2">{book.title}</h3>
+        <p className="text-gray-500 text-xs mt-1">by {book.author}</p>
       </div>
 
       {/* Meta */}
@@ -33,7 +33,7 @@ const BookCard = ({ book, onEdit, onDelete }) => {
       </div>
 
       {/* Details */}
-      <div className="flex items-center justify-between text-xs text-dark-400 pt-3 border-t border-dark-700/50">
+      <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-200">
         <span>ISBN: {book.isbn}</span>
         <span>{book.totalCopies} total</span>
       </div>

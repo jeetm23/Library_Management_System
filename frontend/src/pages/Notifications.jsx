@@ -87,11 +87,11 @@ const Notifications = () => {
 
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">
-        <HiOutlineFilter className="w-4 h-4 text-dark-400" />
+        <HiOutlineFilter className="w-4 h-4 text-gray-500" />
         <button
           onClick={() => { setTypeFilter(''); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-            !typeFilter ? 'bg-primary-500/15 text-primary-400 border border-primary-500/20' : 'text-dark-400 hover:text-white hover:bg-dark-700/50'
+            !typeFilter ? 'bg-primary-50 text-primary-600 border border-primary-200' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
           }`}
         >
           All
@@ -101,7 +101,7 @@ const Notifications = () => {
             key={t}
             onClick={() => { setTypeFilter(t); setPage(1); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              typeFilter === t ? 'bg-primary-500/15 text-primary-400 border border-primary-500/20' : 'text-dark-400 hover:text-white hover:bg-dark-700/50'
+              typeFilter === t ? 'bg-primary-50 text-primary-600 border border-primary-200' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
             }`}
           >
             {typeLabels[t]?.label || t}
@@ -124,9 +124,9 @@ const Notifications = () => {
               }`}
             >
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                notif.isRead ? 'bg-dark-700' : 'bg-primary-500/15'
+                notif.isRead ? 'bg-gray-100' : 'bg-primary-50'
               }`}>
-                <HiOutlineBell className={`w-5 h-5 ${notif.isRead ? 'text-dark-400' : 'text-primary-400'}`} />
+                <HiOutlineBell className={`w-5 h-5 ${notif.isRead ? 'text-gray-500' : 'text-primary-600'}`} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -134,25 +134,25 @@ const Notifications = () => {
                     {typeLabels[notif.type]?.label || notif.type}
                   </span>
                   {notif.student && (
-                    <span className="text-xs text-dark-400">
+                    <span className="text-xs text-gray-500">
                       {notif.student.name} ({notif.student.enrollmentNo})
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-dark-200">{notif.message}</p>
-                <p className="text-xs text-dark-500 mt-1">
+                <p className="text-sm text-gray-700">{notif.message}</p>
+                <p className="text-xs text-gray-400 mt-1">
                   {new Date(notif.sentAt).toLocaleString()}
                 </p>
               </div>
               <button
                 onClick={() => toggleRead(notif.id)}
-                className="p-2 rounded-lg hover:bg-dark-700/50 transition-colors flex-shrink-0"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0"
                 title={notif.isRead ? 'Mark as unread' : 'Mark as read'}
               >
                 {notif.isRead ? (
-                  <HiOutlineEyeOff className="w-4 h-4 text-dark-400" />
+                  <HiOutlineEyeOff className="w-4 h-4 text-gray-500" />
                 ) : (
-                  <HiOutlineEye className="w-4 h-4 text-primary-400" />
+                  <HiOutlineEye className="w-4 h-4 text-primary-600" />
                 )}
               </button>
             </div>
@@ -160,8 +160,8 @@ const Notifications = () => {
         </div>
       ) : (
         <div className="glass-card p-12 text-center">
-          <HiOutlineBell className="w-12 h-12 text-dark-600 mx-auto mb-3" />
-          <p className="text-dark-400">No notifications found.</p>
+          <HiOutlineBell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500">No notifications found.</p>
         </div>
       )}
 
@@ -169,7 +169,7 @@ const Notifications = () => {
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={!pagination.hasPrev} className="btn-secondary text-sm py-2 px-4 disabled:opacity-30">Prev</button>
-          <span className="text-sm text-dark-400">Page {pagination.page} of {pagination.totalPages}</span>
+          <span className="text-sm text-gray-500">Page {pagination.page} of {pagination.totalPages}</span>
           <button onClick={() => setPage(p => p + 1)} disabled={!pagination.hasNext} className="btn-secondary text-sm py-2 px-4 disabled:opacity-30">Next</button>
         </div>
       )}

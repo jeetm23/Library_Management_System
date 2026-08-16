@@ -52,31 +52,31 @@ const Fines = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center">
-            <HiOutlineCash className="w-5 h-5 text-red-400" />
+          <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+            <HiOutlineCash className="w-5 h-5 text-red-600" />
           </div>
-          <p className="text-2xl font-bold text-red-400">₹{summary.totalUnpaid?.toFixed(2) || '0.00'}</p>
-          <p className="text-xs text-dark-400">Total Unpaid Fines</p>
+          <p className="text-2xl font-bold text-red-600">₹{summary.totalUnpaid?.toFixed(2) || '0.00'}</p>
+          <p className="text-xs text-gray-500">Total Unpaid Fines</p>
         </div>
         <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center">
-            <HiOutlineCash className="w-5 h-5 text-amber-400" />
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+            <HiOutlineCash className="w-5 h-5 text-amber-600" />
           </div>
-          <p className="text-2xl font-bold text-white">{fines.filter(f => !f.isPaid).length}</p>
-          <p className="text-xs text-dark-400">Pending Fines</p>
+          <p className="text-2xl font-bold text-gray-900">{fines.filter(f => !f.isPaid).length}</p>
+          <p className="text-xs text-gray-500">Pending Fines</p>
         </div>
         <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-            <HiOutlineCash className="w-5 h-5 text-emerald-400" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <HiOutlineCash className="w-5 h-5 text-emerald-600" />
           </div>
-          <p className="text-2xl font-bold text-white">{fines.filter(f => f.isPaid).length}</p>
-          <p className="text-xs text-dark-400">Paid Fines</p>
+          <p className="text-2xl font-bold text-gray-900">{fines.filter(f => f.isPaid).length}</p>
+          <p className="text-xs text-gray-500">Paid Fines</p>
         </div>
       </div>
 
       {/* Filter */}
       <div className="flex items-center gap-3">
-        <HiOutlineFilter className="w-4 h-4 text-dark-400" />
+        <HiOutlineFilter className="w-4 h-4 text-gray-500" />
         <div className="flex gap-2">
           {[
             { label: 'All', value: '' },
@@ -88,8 +88,8 @@ const Fines = () => {
               onClick={() => { setFilter(f.value); setPage(1); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 filter === f.value
-                  ? 'bg-primary-500/15 text-primary-400 border border-primary-500/20'
-                  : 'text-dark-400 hover:text-white hover:bg-dark-700/50'
+                  ? 'bg-primary-50 text-primary-600 border border-primary-200'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
               {f.label}
@@ -111,7 +111,7 @@ const Fines = () => {
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={!pagination.hasPrev} className="btn-secondary text-sm py-2 px-4 disabled:opacity-30">Prev</button>
-          <span className="text-sm text-dark-400">Page {pagination.page} of {pagination.totalPages}</span>
+          <span className="text-sm text-gray-500">Page {pagination.page} of {pagination.totalPages}</span>
           <button onClick={() => setPage(p => p + 1)} disabled={!pagination.hasNext} className="btn-secondary text-sm py-2 px-4 disabled:opacity-30">Next</button>
         </div>
       )}
