@@ -73,7 +73,8 @@ const createStudent = async (req, res) => {
       return sendResponse(res, 400, false, 'Validation failed', errors.array());
     }
 
-    const { name, email, phone, department, rfidUid, enrollmentNo } = req.body;
+    const { name, email, phone, department, enrollmentNo } = req.body;
+    const rfidUid = req.body.rfidUid?.trim() || null;
 
     // Check for duplicate email or enrollment number
     const existing = await prisma.student.findFirst({
@@ -96,7 +97,7 @@ const createStudent = async (req, res) => {
     }
 
     const student = await prisma.student.create({
-      data: { name, email, phone, department, rfidUid, enrollmentNo },
+      data: { name, email, phone: phone || null, department, rfidUid, enrollmentNo },
     });
 
     return sendResponse(res, 201, true, 'Student created successfully.', student);
@@ -147,7 +148,8 @@ const updateStudent = async (req, res) => {
     }
 
     const { id } = req.params;
-    const { name, email, phone, department, rfidUid, enrollmentNo, isActive } = req.body;
+    const { name, email, phone, department, enrollmentNo, isActive } = req.body;
+    const rfidUid = req.body.rfidUid?.trim() || null;
 
     const existing = await prisma.student.findUnique({ where: { id: parseInt(id) } });
     if (!existing) {
@@ -167,7 +169,7 @@ const updateStudent = async (req, res) => {
       data: {
         ...(name && { name }),
         ...(email && { email }),
-        ...(phone !== undefined && { phone }),
+        ...(phone !== undefined && { phone: phone || null }),
         ...(department && { department }),
         ...(rfidUid !== undefined && { rfidUid }),
         ...(enrollmentNo && { enrollmentNo }),
