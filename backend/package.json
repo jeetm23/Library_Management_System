@@ -6,13 +6,18 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
+    "build": "npx prisma generate && cd ../frontend && npm install && npm run build",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
+    "prisma:migrate:deploy": "npx prisma migrate deploy",
     "prisma:seed": "node prisma/seed.js",
     "prisma:studio": "npx prisma studio"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@prisma/client": "^6.10.0",
@@ -25,10 +30,10 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^4.6.0",
-    "nodemailer": "^9.0.5"
+    "nodemailer": "^9.0.5",
+    "prisma": "^6.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7",
-    "prisma": "^6.10.0"
+    "nodemon": "^3.1.7"
   }
 }

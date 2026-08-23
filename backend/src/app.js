@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('path');
 
 // Route imports
 const authRoutes = require('./routes/auth.routes');
@@ -25,7 +26,12 @@ const app = express();
 // ━━━━━━━━━━━━━━━ MIDDLEWARE ━━━━━━━━━━━━━━━
 
 // Security headers
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Allow Vite-built assets
+    crossOriginEmbedderPolicy: false,
+  })
+);
 
 // CORS
 app.use(
@@ -75,9 +81,22 @@ app.get('/api/dashboard/stats', authenticate, getDashboardStats);
 app.get('/api/reports/monthly-issues', authenticate, getMonthlyIssues);
 app.get('/api/reports/top-books', authenticate, authorize('ADMIN'), getTopBooks);
 
+// ━━━━━━━━━━━━━━━ STATIC FILES (Production) ━━━━━━━━━━━━━━━
+
+if (process.env.NODE_ENV === 'production') {
+  // Serve frontend build output
+  const frontendPath = path.join(__dirname, '../../frontend/dist');
+  app.use(express.static(frontendPath));
+
+  // Catch-all: send index.html for client-side routing
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+}
+
 // ━━━━━━━━━━━━━━━ ERROR HANDLING ━━━━━━━━━━━━━━━
 
-// 404 handler
+// 404 handler (only for /api routes in production)
 app.use((req, res) => {
   res.status(404).json({
     success: false,
