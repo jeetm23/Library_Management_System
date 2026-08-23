@@ -102,7 +102,7 @@ const createStudent = async (req, res) => {
     return sendResponse(res, 201, true, 'Student created successfully.', student);
   } catch (error) {
     console.error('Create student error:', error);
-    return sendResponse(res, 500, false, 'Failed to create student.');
+    return sendResponse(res, 500, false, `Failed to create student: ${error.message}`);
   }
 };
 

@@ -73,6 +73,7 @@ app.get('/api/debug', async (req, res) => {
     const prisma = require('./prisma');
     const userCount = await prisma.user.count();
     const bookCount = await prisma.book.count();
+    const studentCount = await prisma.student.count();
     res.json({
       success: true,
       env: {
@@ -81,9 +82,32 @@ app.get('/api/debug', async (req, res) => {
         JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET ? '✅ SET' : '❌ MISSING',
         DATABASE_URL: process.env.DATABASE_URL ? '✅ SET' : '❌ MISSING',
         CLIENT_URL: process.env.CLIENT_URL || 'NOT SET',
+        SMTP_HOST: process.env.SMTP_HOST || 'NOT SET',
+        SMTP_USER: process.env.SMTP_USER ? '✅ SET' : '❌ MISSING',
+        SMTP_PASS: process.env.SMTP_PASS ? '✅ SET' : '❌ MISSING',
       },
-      db: { users: userCount, books: bookCount },
+      db: { users: userCount, books: bookCount, students: studentCount },
     });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message, stack: error.stack });
+  }
+});
+
+// Test student creation (REMOVE AFTER FIXING)
+app.get('/api/test-student', async (req, res) => {
+  try {
+    const prisma = require('./prisma');
+    const student = await prisma.student.create({
+      data: {
+        name: 'Test Student',
+        email: `test${Date.now()}@student.edu`,
+        department: 'Test',
+        enrollmentNo: `TEST${Date.now()}`,
+      },
+    });
+    // Delete it right after
+    await prisma.student.delete({ where: { id: student.id } });
+    res.json({ success: true, message: 'Student create/delete works fine!', student });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message, stack: error.stack });
   }
