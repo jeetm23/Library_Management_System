@@ -67,6 +67,28 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint (REMOVE AFTER FIXING)
+app.get('/api/debug', async (req, res) => {
+  try {
+    const prisma = require('./prisma');
+    const userCount = await prisma.user.count();
+    const bookCount = await prisma.book.count();
+    res.json({
+      success: true,
+      env: {
+        NODE_ENV: process.env.NODE_ENV || 'NOT SET',
+        JWT_SECRET: process.env.JWT_SECRET ? '✅ SET' : '❌ MISSING',
+        JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET ? '✅ SET' : '❌ MISSING',
+        DATABASE_URL: process.env.DATABASE_URL ? '✅ SET' : '❌ MISSING',
+        CLIENT_URL: process.env.CLIENT_URL || 'NOT SET',
+      },
+      db: { users: userCount, books: bookCount },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message, stack: error.stack });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
