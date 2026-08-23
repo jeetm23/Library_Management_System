@@ -113,6 +113,37 @@ app.get('/api/test-student', async (req, res) => {
   }
 });
 
+// Test email (REMOVE AFTER FIXING)
+app.get('/api/test-email', async (req, res) => {
+  try {
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    // Verify connection first
+    await transporter.verify();
+
+    // Send test email
+    const result = await transporter.sendMail({
+      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+      to: process.env.SMTP_USER, // send to yourself
+      subject: '✅ Library System - Test Email',
+      text: 'If you received this, emails are working on Render!',
+    });
+
+    res.json({ success: true, message: 'Email sent!', result: { messageId: result.messageId, response: result.response } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message, code: error.code, command: error.command });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
