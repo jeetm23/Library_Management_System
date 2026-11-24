@@ -18,6 +18,71 @@ const IssueBook = () => {
   // RFID states
   const [rfidUid, setRfidUid] = useState('');
   const [rfidScanning, setRfidScanning] = useState(false);
+  const [sseConnected, setSseConnected] = useState(false);
+
+  // ★ SSE: Listen for real-time RFID scans from ESP32
+  useEffect(() => {
+    let eventSource;
+    try {
+      eventSource = new EventSource('/api/rfid/esp32/stream');
+
+      eventSource.onopen = () => {
+        setSseConnected(true);
+        console.log('📡 Connected to RFID scan stream');
+      };
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'rfid_scan' && data.rfidUid) {
+            console.log('📡 RFID scan received:', data.rfidUid);
+            setRfidUid(data.rfidUid);
+            // Auto-trigger the lookup
+            autoLookupRfid(data.rfidUid);
+          }
+        } catch (e) {
+          console.error('SSE parse error:', e);
+        }
+      };
+
+      eventSource.onerror = () => {
+        setSseConnected(false);
+        console.log('📡 RFID stream disconnected, reconnecting...');
+      };
+    } catch (e) {
+      console.error('SSE not supported:', e);
+    }
+
+    return () => {
+      if (eventSource) eventSource.close();
+    };
+  }, []);
+
+  /**
+   * Auto-lookup student when SSE delivers an RFID UID
+   */
+  const autoLookupRfid = async (uid) => {
+    try {
+      setRfidScanning(true);
+      const { data } = await API.get(`/students/rfid/${uid}`);
+
+      if (data.success && data.data) {
+        setSelectedStudent(data.data);
+        setStudentSearch(data.data.name);
+        setShowStudentDropdown(false);
+        toast.success(`📡 Student found: ${data.data.name}`);
+
+        if (data.data.issues && data.data.issues.length > 0) {
+          toast(`${data.data.name} has ${data.data.issues.length} active book(s)`, { icon: '📚' });
+        }
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Student not found with this RFID card');
+      setSelectedStudent(null);
+    } finally {
+      setRfidScanning(false);
+    }
+  };
 
   useEffect(() => {
     if (studentSearch.length >= 2) {
@@ -135,8 +200,10 @@ const IssueBook = () => {
                 <p className="text-gray-500 text-xs">Scan student's card to auto-fill details</p>
               </div>
               <div className="ml-auto flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-emerald-600">Ready</span>
+                <div className={`w-2 h-2 rounded-full ${sseConnected ? 'bg-emerald-400 animate-pulse' : 'bg-gray-300'}`} />
+                <span className={`text-xs ${sseConnected ? 'text-emerald-600' : 'text-gray-400'}`}>
+                  {sseConnected ? 'Live — ESP32 Connected' : 'Connecting...'}
+                </span>
               </div>
             </div>
             <form onSubmit={handleRfidScan} className="flex gap-3">

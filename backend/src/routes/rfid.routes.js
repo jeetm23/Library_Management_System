@@ -11,6 +11,7 @@ const {
   esp32ScanValidation,
   registerCard,
   assignCardDirect,
+  rfidScanStream,
 } = require('../controllers/rfid.controller');
 
 // ━━━━━━━━━━━━━━━ ESP32 HARDWARE ROUTES (API key auth, NO JWT) ━━━━━━━━━━━━━━━
@@ -18,6 +19,9 @@ const {
 router.post('/esp32/scan', esp32ScanValidation, scanFromESP32);
 router.post('/esp32/register-card', registerCard);
 router.put('/esp32/assign-direct', assignCardDirect);
+
+// ━━━━━━━━━━━━━━━ SSE STREAM (no auth — frontend listens for live scans) ━━━━━
+router.get('/esp32/stream', rfidScanStream);
 
 // ━━━━━━━━━━━━━━━ WEB APP ROUTES (JWT auth required) ━━━━━━━━━━━━━━━━━━━━━━
 router.use(authenticate);

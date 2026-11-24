@@ -3,6 +3,50 @@ const { sendResponse, getTodayRange, getPagination, paginatedResponse } = requir
 const { sendRFIDEntryAlert } = require('../services/email.service');
 const { body, validationResult } = require('express-validator');
 
+// ━━━━━━━━━━━ SSE: Real-time RFID scan broadcast to frontend ━━━━━━━━━━━
+const sseClients = new Set();
+
+/**
+ * GET /api/rfid/esp32/stream — SSE stream for real-time RFID scans
+ * Frontend connects here to receive live scan events pushed by ESP32.
+ */
+const rfidScanStream = (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
+
+  // Send a heartbeat immediately so client knows it's connected
+  res.write('data: {"type":"connected"}\n\n');
+
+  sseClients.add(res);
+  console.log(`📡 SSE client connected (total: ${sseClients.size})`);
+
+  // Heartbeat every 30s to keep connection alive
+  const heartbeat = setInterval(() => {
+    res.write('data: {"type":"heartbeat"}\n\n');
+  }, 30000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    sseClients.delete(res);
+    console.log(`📡 SSE client disconnected (total: ${sseClients.size})`);
+  });
+};
+
+/**
+ * Broadcast an RFID scan event to all connected SSE clients
+ */
+const broadcastRfidScan = (rfidUid) => {
+  const event = JSON.stringify({ type: 'rfid_scan', rfidUid, timestamp: new Date().toISOString() });
+  for (const client of sseClients) {
+    client.write(`data: ${event}\n\n`);
+  }
+  console.log(`📡 Broadcasted RFID scan ${rfidUid} to ${sseClients.size} client(s)`);
+};
+
 /**
  * Validation rules for ESP32 scan
  */
@@ -218,6 +262,9 @@ const scanFromESP32 = async (req, res) => {
 
     const { rfidUid, deviceId } = req.body;
 
+    // ★ Broadcast to all connected SSE clients (IssueBook page)
+    broadcastRfidScan(rfidUid);
+
     // 1. Find student by RFID UID (try exact match first, then hex match)
     let student = await prisma.student.findUnique({ where: { rfidUid } });
 
@@ -393,4 +440,5 @@ module.exports = {
   esp32ScanValidation,
   registerCard,
   assignCardDirect,
+  rfidScanStream,
 };
