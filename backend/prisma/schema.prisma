@@ -76,6 +76,7 @@ model Book {
   totalCopies     Int         @default(1)
   availableCopies Int         @default(1)
   shelfLocation   String?
+  rfidUid         String?     @unique
   createdAt       DateTime    @default(now())
   issues          BookIssue[]
 
@@ -133,4 +134,13 @@ model Fine {
   createdAt DateTime  @default(now())
 
   @@map("fines")
+}
+
+model RFIDCardMap {
+  id             Int      @id @default(autoincrement())
+  hardwareUid    String   @unique   // The hex UID read by ESP32 (e.g., "A3B2C1D4")
+  studentRfidUid String              // Maps to Student.rfidUid (e.g., "RFID-001-CS")
+  createdAt      DateTime @default(now())
+
+  @@map("rfid_card_map")
 }
