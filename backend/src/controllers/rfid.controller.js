@@ -6,6 +6,11 @@ const { body, validationResult } = require('express-validator');
 // ━━━━━━━━━━━ SSE: Real-time RFID scan broadcast to frontend ━━━━━━━━━━━
 const sseClients = new Set();
 
+// ★ Track last scanned student per ESP32 device (for 2-scan issue flow)
+// Key: deviceId, Value: { student, timestamp }
+const pendingStudents = new Map();
+const PENDING_TIMEOUT_MS = 60000; // 60 seconds to scan book after student
+
 /**
  * GET /api/rfid/esp32/stream — SSE stream for real-time RFID scans
  * Frontend connects here to receive live scan events pushed by ESP32.
@@ -37,14 +42,14 @@ const rfidScanStream = (req, res) => {
 };
 
 /**
- * Broadcast an RFID scan event to all connected SSE clients
+ * Broadcast an event to all connected SSE clients
  */
-const broadcastRfidScan = (rfidUid) => {
-  const event = JSON.stringify({ type: 'rfid_scan', rfidUid, timestamp: new Date().toISOString() });
+const broadcastEvent = (eventData) => {
+  const event = JSON.stringify(eventData);
   for (const client of sseClients) {
     client.write(`data: ${event}\n\n`);
   }
-  console.log(`📡 Broadcasted RFID scan ${rfidUid} to ${sseClients.size} client(s)`);
+  console.log(`📡 Broadcasted ${eventData.type} to ${sseClients.size} client(s)`);
 };
 
 /**
@@ -242,8 +247,14 @@ const getStudentLogs = async (req, res) => {
 
 /**
  * POST /api/rfid/esp32/scan — ESP32 hardware RFID scan (API key auth, no JWT)
- * The ESP32 sends the raw UID read from the RFID card.
- * This endpoint maps the UID to a student and logs entry/exit.
+ * 
+ * ★ TWO-SCAN FLOW:
+ *   Scan 1: Student RFID card → identifies student, stores as "pending"
+ *   Scan 2: Book RFID keychain → auto-issues the book to the pending student
+ *
+ * The endpoint checks if the UID belongs to a student or a book:
+ *   - Student card → store student, broadcast to frontend, return student info
+ *   - Book keychain → find pending student, issue book, broadcast result
  */
 const scanFromESP32 = async (req, res) => {
   try {
@@ -261,17 +272,107 @@ const scanFromESP32 = async (req, res) => {
     }
 
     const { rfidUid, deviceId } = req.body;
+    const device = deviceId || 'ESP32-RFID-01';
 
-    // ★ Broadcast to all connected SSE clients (IssueBook page)
-    broadcastRfidScan(rfidUid);
+    // ━━━━━━━━━ Step 1: Check if this UID is a BOOK ━━━━━━━━━
+    const book = await prisma.book.findUnique({ where: { rfidUid } });
 
-    // 1. Find student by RFID UID (try exact match first, then hex match)
+    if (book) {
+      // This is a BOOK scan — try to issue it to the pending student
+      const pending = pendingStudents.get(device);
+
+      if (!pending || (Date.now() - pending.timestamp) > PENDING_TIMEOUT_MS) {
+        // No student scanned recently
+        pendingStudents.delete(device);
+        broadcastEvent({ type: 'book_scan_no_student', rfidUid, book: { id: book.id, title: book.title, author: book.author } });
+        console.log(`⚠️  Book "${book.title}" scanned but no student pending on ${device}`);
+        return sendResponse(res, 400, false, 'Scan a student card first, then scan the book.', {
+          scanType: 'book',
+          book: { id: book.id, title: book.title, author: book.author },
+        });
+      }
+
+      const student = pending.student;
+
+      // Check if book has available copies
+      if (book.availableCopies <= 0) {
+        broadcastEvent({ type: 'book_unavailable', rfidUid, book: { id: book.id, title: book.title } });
+        return sendResponse(res, 400, false, `No copies available for "${book.title}".`, {
+          scanType: 'book',
+          book: { id: book.id, title: book.title, availableCopies: 0 },
+        });
+      }
+
+      // Check if student already has this book
+      const existingIssue = await prisma.bookIssue.findFirst({
+        where: { studentId: student.id, bookId: book.id, status: { in: ['ISSUED', 'OVERDUE'] } },
+      });
+
+      if (existingIssue) {
+        broadcastEvent({ type: 'book_already_issued', student: { name: student.name }, book: { title: book.title } });
+        return sendResponse(res, 400, false, `${student.name} already has "${book.title}" issued.`);
+      }
+
+      // ★ AUTO-ISSUE the book to the student!
+      const issueDays = parseInt(process.env.DEFAULT_ISSUE_DAYS) || 14;
+      const issueDate = new Date();
+      const dueDate = new Date(issueDate);
+      dueDate.setDate(dueDate.getDate() + issueDays);
+
+      const [issue] = await prisma.$transaction([
+        prisma.bookIssue.create({
+          data: {
+            studentId: student.id,
+            bookId: book.id,
+            issueDate,
+            dueDate,
+            issuedBy: 1, // System/ESP32 auto-issue
+          },
+          include: { student: true, book: true },
+        }),
+        prisma.book.update({
+          where: { id: book.id },
+          data: { availableCopies: { decrement: 1 } },
+        }),
+      ]);
+
+      // Create notification
+      await prisma.notification.create({
+        data: {
+          studentId: student.id,
+          type: 'ISSUE_CONFIRMATION',
+          message: `Book "${book.title}" issued via RFID. Due: ${dueDate.toLocaleDateString()}.`,
+        },
+      });
+
+      // Clear the pending student
+      pendingStudents.delete(device);
+
+      // Broadcast to frontend
+      broadcastEvent({
+        type: 'book_issued',
+        student: { id: student.id, name: student.name, enrollmentNo: student.enrollmentNo, department: student.department },
+        book: { id: book.id, title: book.title, author: book.author, isbn: book.isbn },
+        issueDate: issueDate.toISOString(),
+        dueDate: dueDate.toISOString(),
+      });
+
+      console.log(`📚 AUTO-ISSUED: "${book.title}" → ${student.name} (${student.enrollmentNo}) via ${device}`);
+
+      return sendResponse(res, 201, true, `Book "${book.title}" issued to ${student.name}!`, {
+        scanType: 'book_issued',
+        student: { id: student.id, name: student.name, enrollmentNo: student.enrollmentNo, department: student.department },
+        book: { id: book.id, title: book.title, author: book.author },
+        issueDate,
+        dueDate,
+      });
+    }
+
+    // ━━━━━━━━━ Step 2: Check if this UID is a STUDENT ━━━━━━━━━
     let student = await prisma.student.findUnique({ where: { rfidUid } });
 
-    // If not found by exact UID, try to find by a mapped UID
-    // (students may have friendly IDs like "RFID-001-CS" but ESP32 reads hex like "A3B2C1D4")
+    // Try mapped UID if not found
     if (!student) {
-      // Check the rfid_card_map table for a mapping
       const mapping = await prisma.rFIDCardMap.findUnique({ where: { hardwareUid: rfidUid } });
       if (mapping) {
         student = await prisma.student.findUnique({ where: { rfidUid: mapping.studentRfidUid } });
@@ -279,7 +380,8 @@ const scanFromESP32 = async (req, res) => {
     }
 
     if (!student) {
-      console.log(`⚠️  Unregistered RFID card scanned: ${rfidUid} from device: ${deviceId || 'unknown'}`);
+      console.log(`⚠️  Unregistered RFID card scanned: ${rfidUid} from device: ${device}`);
+      broadcastEvent({ type: 'rfid_scan', rfidUid, found: false });
       return sendResponse(res, 404, false, 'Unregistered RFID card.', { scannedUid: rfidUid });
     }
 
@@ -287,49 +389,22 @@ const scanFromESP32 = async (req, res) => {
       return sendResponse(res, 400, false, 'Student account is inactive.');
     }
 
-    // 2. Get last RFID log for this student
-    const lastLog = await prisma.rFIDLog.findFirst({
-      where: { studentId: student.id },
-      orderBy: { timestamp: 'desc' },
+    // ★ Store as pending student for book scan
+    pendingStudents.set(device, { student, timestamp: Date.now() });
+
+    // Broadcast student scan to frontend
+    broadcastEvent({
+      type: 'student_scanned',
+      rfidUid,
+      student: { id: student.id, name: student.name, enrollmentNo: student.enrollmentNo, department: student.department },
     });
 
-    // 3. Determine entry type
-    let entryType;
-    if (!lastLog || lastLog.entryType === 'EXIT') {
-      entryType = 'ENTRY';
-    } else {
-      entryType = 'EXIT';
-    }
+    console.log(`👤 Student scanned: ${student.name} (${student.enrollmentNo}) — waiting for book scan on ${device}...`);
 
-    // 4. Record log
-    const timestamp = new Date();
-    const log = await prisma.rFIDLog.create({
-      data: {
-        studentId: student.id,
-        rfidUid: student.rfidUid,  // Use the student's registered UID
-        entryType,
-        timestamp,
-      },
-    });
-
-    // 5. Send email notification (if enabled)
-    const emailNotify = process.env.RFID_EMAIL_NOTIFY === 'true';
-    if (emailNotify) {
-      sendRFIDEntryAlert(student, entryType, timestamp).catch(console.error);
-    }
-
-    console.log(`✅ ESP32 scan: ${entryType} — ${student.name} (${student.enrollmentNo}) from device: ${deviceId || 'unknown'}`);
-
-    return sendResponse(res, 200, true, `Library ${entryType.toLowerCase()} recorded.`, {
-      student: {
-        id: student.id,
-        name: student.name,
-        enrollmentNo: student.enrollmentNo,
-        department: student.department,
-      },
-      entryType,
-      timestamp,
-      logId: log.id,
+    return sendResponse(res, 200, true, `Student: ${student.name}. Now scan the book to issue.`, {
+      scanType: 'student',
+      student: { id: student.id, name: student.name, enrollmentNo: student.enrollmentNo, department: student.department },
+      message: 'Now scan the book RFID tag to issue it.',
     });
   } catch (error) {
     console.error('ESP32 RFID scan error:', error);

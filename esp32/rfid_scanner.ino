@@ -365,41 +365,91 @@ void sendScanToServer(String uid) {
     DeserializationError error = deserializeJson(resDoc, response);
 
     if (!error && resDoc["success"].as<bool>()) {
-      // ✅ Success!
-      const char* studentName = resDoc["data"]["student"]["name"];
-      const char* entryType = resDoc["data"]["entryType"];
-      const char* enrollmentNo = resDoc["data"]["student"]["enrollmentNo"];
+      // ✅ Success! Check what type of scan response
+      const char* scanType = resDoc["data"]["scanType"] | "unknown";
+      String type = String(scanType);
 
-      Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      Serial.print("✅ ");
-      Serial.print(entryType);
-      Serial.print(" — ");
-      Serial.println(studentName);
-      Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      if (type == "student") {
+        // ★ Student card scanned — waiting for book scan
+        const char* studentName = resDoc["data"]["student"]["name"];
+        const char* enrollmentNo = resDoc["data"]["student"]["enrollmentNo"];
 
-      // Show on LCD
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.write(0);  // Check mark
-      lcd.print(" ");
+        Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        Serial.print("👤 Student: ");
+        Serial.println(studentName);
+        Serial.print("   ID: ");
+        Serial.println(enrollmentNo);
+        Serial.println("📖 Now scan the book...");
+        Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-      // Show ENTRY or EXIT
-      String type = String(entryType);
-      if (type == "ENTRY") {
-        lcd.print("ENTRY Welcome!");
+        // Show on LCD
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        String name = String(studentName);
+        if (name.length() > 16) name = name.substring(0, 16);
+        lcd.print(name);
+        lcd.setCursor(0, 1);
+        lcd.print("Scan book now...");
+
+        indicateSuccess();
+
+      } else if (type == "book_issued") {
+        // ★ Book issued successfully!
+        const char* studentName = resDoc["data"]["student"]["name"];
+        const char* bookTitle = resDoc["data"]["book"]["title"];
+
+        Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        Serial.print("📚 ISSUED: ");
+        Serial.println(bookTitle);
+        Serial.print("   TO: ");
+        Serial.println(studentName);
+        Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+        // Show on LCD
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.write(0);  // Check mark
+        lcd.print(" Book Issued!");
+        lcd.setCursor(0, 1);
+        String title = String(bookTitle);
+        if (title.length() > 16) title = title.substring(0, 16);
+        lcd.print(title);
+
+        // Double beep for success
+        indicateSuccess();
+        delay(200);
+        indicateSuccess();
+
       } else {
-        lcd.print("EXIT Goodbye! ");
-      }
+        // Legacy: entry/exit response
+        const char* studentName = resDoc["data"]["student"]["name"];
+        const char* entryType = resDoc["data"]["entryType"];
 
-      lcd.setCursor(0, 1);
-      // Show student name (truncate to 16 chars)
-      String name = String(studentName);
-      if (name.length() > 16) {
-        name = name.substring(0, 16);
-      }
-      lcd.print(name);
+        Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        Serial.print("✅ ");
+        Serial.print(entryType);
+        Serial.print(" — ");
+        Serial.println(studentName);
+        Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-      indicateSuccess();
+        // Show on LCD
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.write(0);
+        lcd.print(" ");
+        String etype = String(entryType);
+        if (etype == "ENTRY") {
+          lcd.print("ENTRY Welcome!");
+        } else {
+          lcd.print("EXIT Goodbye! ");
+        }
+        lcd.setCursor(0, 1);
+        String name = String(studentName);
+        if (name.length() > 16) name = name.substring(0, 16);
+        lcd.print(name);
+
+        indicateSuccess();
+      }
     } else {
       // ❌ API returned an error
       const char* message = resDoc["message"] | "Unknown error";

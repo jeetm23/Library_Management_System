@@ -34,11 +34,43 @@ const IssueBook = () => {
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.type === 'rfid_scan' && data.rfidUid) {
-            console.log('📡 RFID scan received:', data.rfidUid);
+
+          if (data.type === 'student_scanned' && data.student) {
+            // ★ Student card scanned — auto-fill student
+            console.log('📡 Student scanned:', data.student.name);
             setRfidUid(data.rfidUid);
-            // Auto-trigger the lookup
             autoLookupRfid(data.rfidUid);
+          }
+
+          if (data.type === 'book_issued') {
+            // ★ Book issued automatically via ESP32!
+            toast.success(
+              `📚 "${data.book.title}" issued to ${data.student.name}!`,
+              { duration: 5000 }
+            );
+            // Reset form
+            setSelectedStudent(null);
+            setSelectedBook(null);
+            setStudentSearch('');
+            setBookSearch('');
+            setRfidUid('');
+          }
+
+          if (data.type === 'book_scan_no_student') {
+            toast.error('Scan a student card first, then scan the book!', { icon: '⚠️' });
+          }
+
+          if (data.type === 'book_unavailable') {
+            toast.error(`No copies available for "${data.book.title}"`, { icon: '📕' });
+          }
+
+          if (data.type === 'book_already_issued') {
+            toast.error(`${data.student.name} already has "${data.book.title}"`, { icon: '⚠️' });
+          }
+
+          // Legacy: simple rfid_scan event
+          if (data.type === 'rfid_scan' && data.rfidUid) {
+            setRfidUid(data.rfidUid);
           }
         } catch (e) {
           console.error('SSE parse error:', e);
