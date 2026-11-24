@@ -41,6 +41,7 @@
 #include <MFRC522.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -49,13 +50,13 @@
 // ⚠️ CHANGE THESE VALUES TO MATCH YOUR SETUP
 
 // WiFi credentials
-const char* WIFI_SSID     = "YOUR_WIFI_SSID";       // ← Change this
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";     // ← Change this
+const char* WIFI_SSID     = "YashNagpure";
+const char* WIFI_PASSWORD = "yash1234";
 
 // Backend API URL — use your computer's local IP or Render URL
 // For local development:  "http://192.168.1.100:5000"
 // For Render deployment:  "https://your-app.onrender.com"
-const char* SERVER_URL    = "http://192.168.1.100:5000";  // ← Change this
+const char* SERVER_URL    = "https://library-management-system-206v.onrender.com";
 
 // ESP32 API key (must match ESP32_API_KEY in your backend .env)
 const char* API_KEY       = "esp32-library-secret-key-2026";  // ← Change this
@@ -63,18 +64,23 @@ const char* API_KEY       = "esp32-library-secret-key-2026";  // ← Change this
 // ━━━━━━━━━━━━━━━ PIN DEFINITIONS (matching your circuit) ━━━━━━━━━━━━━━━
 // RFID RC522 (SPI)
 #define SS_PIN     5     // SDA pin
-#define RST_PIN    27    // Reset pin (changed to 27, since 22 is used by I2C SCL)
+#define RST_PIN    -1    // RST pin (-1 = not used, RST tied to 3.3V on board)
 
-// LCD 16x2 (I2C) — uses GPIO 21 (SDA) and GPIO 22 (SCL) by default
+// LCD 16x2 (I2C) — Custom pins: SDA=GPIO21, SCL=GPIO32
 #define LCD_ADDRESS 0x27  // Common I2C address (try 0x3F if 0x27 doesn't work)
 #define LCD_COLS    16
 #define LCD_ROWS    2
+#define LCD_SDA     21    // I2C SDA
+#define LCD_SCL     32    // I2C SCL (not default 22, since 22 is used by RFID RST)
 
 // Buzzer (through BC547 transistor)
-#define BUZZER_PIN 4
+#define BUZZER_PIN 25
 
 // Red LED (with 330Ω resistor)
-#define LED_RED    2
+#define LED_RED    26
+
+// Green LED
+#define LED_GREEN  27
 
 // Push Button
 #define BUTTON_PIN 15
@@ -120,14 +126,54 @@ void setup() {
 
   // Initialize pins
   pinMode(LED_RED, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);  // Button with internal pull-up
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_GREEN, LOW);
   digitalWrite(BUZZER_PIN, LOW);
 
-  // Initialize LCD
+  // ━━━ Step 1: Initialize I2C with custom pins FIRST ━━━
+  Wire.begin(LCD_SDA, LCD_SCL);
+  delay(100);
+
+  // ━━━ Step 2: Initialize LCD ━━━
   lcd.init();
+  lcd.backlight();
+  lcd.createChar(0, checkMark);
+  lcd.createChar(1, crossMark);
+  lcd.createChar(2, wifiIcon);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Library RFID");
+  lcd.setCursor(0, 1);
+  lcd.print("Starting...");
+  delay(1500);
+
+  // ━━━ Step 3: Initialize SPI and RFID reader ━━━
+  SPI.begin();
+  delay(100);
+  rfid.PCD_Init();
+  delay(200);
+
+  // I2C address scan (helps debug LCD issues)
+  Serial.println("🔍 Scanning I2C devices...");
+  int deviceCount = 0;
+  for (byte addr = 1; addr < 127; addr++) {
+    Wire.beginTransmission(addr);
+    if (Wire.endTransmission() == 0) {
+      Serial.print("   Found I2C device at 0x");
+      Serial.println(addr, HEX);
+      deviceCount++;
+    }
+  }
+  Serial.print("   Total I2C devices: ");
+  Serial.println(deviceCount);
+  if (deviceCount == 0) {
+    Serial.println("   ⚠️  No I2C device found! Check LCD wiring (SDA→GPIO21, SCL→GPIO32)");
+  }
   lcd.backlight();
   lcd.createChar(0, checkMark);
   lcd.createChar(1, crossMark);
@@ -148,11 +194,25 @@ void setup() {
   byte version = rfid.PCD_ReadRegister(rfid.VersionReg);
   if (version == 0x00 || version == 0xFF) {
     Serial.println("❌ ERROR: MFRC522 not detected! Check wiring.");
-    lcdShowError("RFID Reader", "Not Found!");
+    Serial.println("   SDA→GPIO5, SCK→GPIO18, MOSI→GPIO23, MISO→GPIO19, RST→GPIO22");
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("RFID Reader");
+    lcd.setCursor(0, 1);
+    lcd.print("NOT FOUND!");
     blinkError(10);
   } else {
     Serial.print("✅ MFRC522 detected. Firmware: 0x");
     Serial.println(version, HEX);
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("RFID Reader OK!");
+    lcd.setCursor(0, 1);
+    lcd.print("FW: 0x");
+    lcd.print(version, HEX);
+    delay(1000);
   }
 
   // Connect to WiFi
@@ -266,7 +326,15 @@ void sendScanToServer(String uid) {
   Serial.print("📡 Sending to: ");
   Serial.println(url);
 
-  http.begin(url);
+  // Check if HTTPS — need secure client
+  if (String(SERVER_URL).startsWith("https")) {
+    WiFiClientSecure *client = new WiFiClientSecure;
+    client->setInsecure();  // Skip certificate verification (OK for this use case)
+    http.begin(*client, url);
+  } else {
+    http.begin(url);
+  }
+
   http.addHeader("Content-Type", "application/json");
   http.addHeader("X-API-Key", API_KEY);
   http.setTimeout(HTTP_TIMEOUT_MS);
@@ -477,17 +545,17 @@ void showSystemInfo() {
 // ━━━━━━━━━━━━━━━ LED & BUZZER FUNCTIONS ━━━━━━━━━━━━━━━
 
 /**
- * Indicate successful scan (LED blink + single beep)
+ * Indicate successful scan (GREEN LED + single beep)
  */
 void indicateSuccess() {
-  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_GREEN, HIGH);
   beep(150, 1);
   delay(300);
-  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_GREEN, LOW);
 }
 
 /**
- * Indicate error (LED blink + triple beep)
+ * Indicate error (RED LED + triple beep)
  */
 void indicateError() {
   for (int i = 0; i < 3; i++) {

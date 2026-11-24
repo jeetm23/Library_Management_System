@@ -256,6 +256,39 @@ const getStudentFines = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/students/rfid/:uid — Find student by RFID UID
+ */
+const getStudentByRfid = async (req, res) => {
+  try {
+    const { uid } = req.params;
+
+    const student = await prisma.student.findUnique({
+      where: { rfidUid: uid },
+      include: {
+        issues: {
+          where: { status: { in: ['ISSUED', 'OVERDUE'] } },
+          include: { book: true },
+        },
+        _count: { select: { issues: true } },
+      },
+    });
+
+    if (!student) {
+      return sendResponse(res, 404, false, 'No student found with this RFID card.');
+    }
+
+    if (!student.isActive) {
+      return sendResponse(res, 400, false, 'Student account is inactive.');
+    }
+
+    return sendResponse(res, 200, true, 'Student found.', student);
+  } catch (error) {
+    console.error('Get student by RFID error:', error);
+    return sendResponse(res, 500, false, 'Failed to find student.');
+  }
+};
+
 module.exports = {
   getAllStudents,
   createStudent,
@@ -264,5 +297,6 @@ module.exports = {
   deleteStudent,
   getStudentIssues,
   getStudentFines,
+  getStudentByRfid,
   studentValidation,
 };

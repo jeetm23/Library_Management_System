@@ -46,3 +46,5 @@ services:
         sync: false
       - key: CLIENT_URL
         sync: false  # Set to your Render URL after first deploy
+      - key: ESP32_API_KEY
+        value: "esp32-library-secret-key-2026"

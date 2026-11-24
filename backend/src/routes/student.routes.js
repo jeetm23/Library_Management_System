@@ -9,6 +9,7 @@ const {
   deleteStudent,
   getStudentIssues,
   getStudentFines,
+  getStudentByRfid,
   studentValidation,
 } = require('../controllers/student.controller');
 
@@ -16,6 +17,7 @@ router.use(authenticate);
 
 router.get('/', getAllStudents);
 router.post('/', studentValidation, createStudent);
+router.get('/rfid/:uid', getStudentByRfid);
 router.get('/:id', getStudentById);
 router.put('/:id', studentValidation, updateStudent);
 router.delete('/:id', deleteStudent);

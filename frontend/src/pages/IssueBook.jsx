@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
-import { HiOutlineSearch, HiOutlineBookOpen, HiOutlineUserGroup, HiOutlineCalendar, HiOutlineCheck } from 'react-icons/hi';
+import { HiOutlineSearch, HiOutlineBookOpen, HiOutlineUserGroup, HiOutlineCalendar, HiOutlineCheck, HiOutlineStatusOnline } from 'react-icons/hi';
 
 const IssueBook = () => {
   const [students, setStudents] = useState([]);
@@ -14,6 +14,10 @@ const IssueBook = () => {
   const [loading, setLoading] = useState(false);
   const [showStudentDropdown, setShowStudentDropdown] = useState(false);
   const [showBookDropdown, setShowBookDropdown] = useState(false);
+
+  // RFID states
+  const [rfidUid, setRfidUid] = useState('');
+  const [rfidScanning, setRfidScanning] = useState(false);
 
   useEffect(() => {
     if (studentSearch.length >= 2) {
@@ -51,6 +55,36 @@ const IssueBook = () => {
     }
   };
 
+  /**
+   * RFID Scan — Look up student by RFID UID
+   */
+  const handleRfidScan = async (e) => {
+    e.preventDefault();
+    if (!rfidUid.trim()) return;
+
+    try {
+      setRfidScanning(true);
+      const { data } = await API.get(`/students/rfid/${rfidUid.trim()}`);
+      
+      if (data.success && data.data) {
+        setSelectedStudent(data.data);
+        setStudentSearch(data.data.name);
+        setShowStudentDropdown(false);
+        toast.success(`Student found: ${data.data.name}`);
+
+        // Show active issues warning if any
+        if (data.data.issues && data.data.issues.length > 0) {
+          toast(`${data.data.name} has ${data.data.issues.length} active book(s)`, { icon: '📚' });
+        }
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Student not found with this RFID card');
+      setSelectedStudent(null);
+    } finally {
+      setRfidScanning(false);
+    }
+  };
+
   const handleIssue = async () => {
     if (!selectedStudent || !selectedBook) {
       toast.error('Please select both student and book');
@@ -68,6 +102,7 @@ const IssueBook = () => {
       setSelectedBook(null);
       setStudentSearch('');
       setBookSearch('');
+      setRfidUid('');
       setDueDays(14);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to issue book');
@@ -88,13 +123,70 @@ const IssueBook = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Selection Form */}
         <div className="space-y-5">
-          {/* Student Selection */}
+
+          {/* RFID Scan Section */}
+          <div className="glass-card p-5 border-2 border-emerald-200 bg-emerald-50/30">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <HiOutlineStatusOnline className="w-4.5 h-4.5 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="text-gray-900 font-semibold text-sm">Scan RFID Card</h3>
+                <p className="text-gray-500 text-xs">Scan student's card to auto-fill details</p>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs text-emerald-600">Ready</span>
+              </div>
+            </div>
+            <form onSubmit={handleRfidScan} className="flex gap-3">
+              <input
+                type="text"
+                value={rfidUid}
+                onChange={(e) => setRfidUid(e.target.value.toUpperCase())}
+                placeholder="Enter or scan RFID UID (e.g., E06AEE5F)"
+                className="input-field flex-1"
+                autoFocus
+                disabled={rfidScanning}
+              />
+              <button
+                type="submit"
+                disabled={!rfidUid.trim() || rfidScanning}
+                className="btn-primary whitespace-nowrap flex items-center gap-2"
+              >
+                {rfidScanning ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <HiOutlineStatusOnline className="w-4 h-4" />
+                )}
+                Scan
+              </button>
+            </form>
+            {selectedStudent && (
+              <div className="mt-3 p-3 bg-emerald-100 border border-emerald-300 rounded-xl flex items-center gap-3">
+                <HiOutlineCheck className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-emerald-800 font-semibold">{selectedStudent.name}</p>
+                  <p className="text-xs text-emerald-600">{selectedStudent.enrollmentNo} • {selectedStudent.department}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* OR Divider */}
+          <div className="flex items-center gap-4">
+            <hr className="flex-1 border-gray-200" />
+            <span className="text-xs text-gray-400 font-medium">OR SEARCH MANUALLY</span>
+            <hr className="flex-1 border-gray-200" />
+          </div>
+
+          {/* Student Selection (manual search) */}
           <div className="glass-card p-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
                 <HiOutlineUserGroup className="w-4.5 h-4.5 text-emerald-600" />
               </div>
-              <h3 className="text-gray-900 font-semibold text-sm">Select Student</h3>
+              <h3 className="text-gray-900 font-semibold text-sm">Search Student</h3>
             </div>
             <div className="relative">
               <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -127,14 +219,6 @@ const IssueBook = () => {
                 </div>
               )}
             </div>
-            {selectedStudent && (
-              <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
-                <HiOutlineCheck className="w-4 h-4 text-emerald-600" />
-                <p className="text-sm text-emerald-300">
-                  <span className="font-semibold">{selectedStudent.name}</span> — {selectedStudent.enrollmentNo}
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Book Selection */}
@@ -229,6 +313,12 @@ const IssueBook = () => {
                   <span className="text-gray-500">Department</span>
                   <span className="text-gray-900">{selectedStudent.department}</span>
                 </div>
+                {selectedStudent.rfidUid && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">RFID Card</span>
+                    <span className="text-emerald-600 font-mono text-xs">{selectedStudent.rfidUid}</span>
+                  </div>
+                )}
                 <hr className="border-gray-200" />
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Book</span>
